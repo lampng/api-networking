@@ -13,8 +13,8 @@ router.get('/', (req, res) => {
         "Đăng ký(POST):": "https://phanlam-api.vercel.app/user/register",
         "Đăng nhập(POST):": "https://phanlam-api.vercel.app/user/login",
         "Đăng xuất(GET):": "https://phanlam-api.vercel.app/user/logout",
-        "Cập nhập người dùng(POST):": "https://phanlam-api.vercel.app/user/update/:id",
-        "Xoá người dùng(POST):": "https://phanlam-api.vercel.app/user/delete/:id",
+        "Cập nhập người dùng(PUT):": "https://phanlam-api.vercel.app/user/update/:id",
+        "Xoá người dùng(DELETE):": "https://phanlam-api.vercel.app/user/delete/:id",
         "Gọi danh sách người dùng(GET):": "https://phanlam-api.vercel.app/user/list",
         "Gọi chi tiết người dùng(GET):": "https://phanlam-api.vercel.app/user/detail/:id",
     })
