@@ -1,5 +1,8 @@
 require('colors')
+// mongodb user model
 const userModels = require('../models/userModel');
+require('dotenv').config();
+//Tải lên ảnh
 const cloudinary = require('../middleware/cloudinary.js');
 const upload = require('../middleware/upload');
 const path = require('path');
@@ -23,12 +26,8 @@ router.get('/', (req, res) => {
 //Đăng ký
 //Lưu ý: "Key" ở trong form-data phải cùng tên với (upload.single("image"))
 router.post('/register', upload.single("image"), async (req, res) => {
-    console.log(`❕  ${req.file}`.cyan.bold);
     try {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-            folder: "android-networking/users"
-        });
-        console.log(`❕  ${req.file.path}`.cyan.bold);
+
         const emailCheck = await userModels.findOne({
             email: req.body.email
         });
@@ -48,28 +47,48 @@ router.post('/register', upload.single("image"), async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
 
-        const newUser = new userModels({
-            name: req.body.name,
-            email: req.body.email,
-            password: hashedPassword,
-            address: req.body.address,
-            phone: req.body.phone,
-            role: "client",
-            avatar: result.secure_url,
-            cloudinary_id: result.public_id
-        });
-        try {
-            await newUser.save();
-            res.json({
-                message: 'Đăng ký thành công'
+
+
+
+
+        if (req.file != null) {
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                folder: "android-networking/users"
             });
-            console.log(`✅  Đăng ký thành công`.green.bold);
-        } catch (error) {
-            res.json({
-                message: 'Đăng ký không thành công'
+            const newUser = new userModels({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                address: req.body.address,
+                phone: req.body.phone,
+                role: "client",
+                avatar: result.secure_url,
+                cloudinary_id: result.public_id
             });
-            console.log(`❗  Đăng ký không thành công`.bgRed.white.bold);
+            try {
+                await newUser.save();
+                res.json({
+                    message: 'Đăng ký thành công'
+                });
+                console.log(`✅  Đăng ký thành công`.green.bold);
+            } catch (error) {
+                res.json({
+                    message: 'Đăng ký không thành công'
+                });
+                console.log(`❗  Đăng ký không thành công`.bgRed.white.bold);
+            }
+        } else {
+            const newUser = new userModels({
+                name: req.body.name,
+                email: req.body.email,
+                password: hashedPassword,
+                address: req.body.address,
+                phone: req.body.phone,
+                role: "client",
+            });
         }
+        // =============================================
+
     } catch (error) {
         console.log(`ERRORR: ${error}`.bgRed.white);
     }
@@ -90,7 +109,7 @@ router.post('/login', async (req, res) => {
             if (data) {
                 if (check.password != null) {
                     if (isMatch) {
-                        
+
                         var manager = check.role;
                         console.log(`========= ✅  Login success | ${check.role} =========`.green.bold);
                         req.session.user = check.email;
@@ -144,15 +163,15 @@ router.post('/login', async (req, res) => {
         console.log("Failed: ".bgRed.white.strikethrough.bold, err);
     }
 })
-router.get('/logout',(req, res) => {
+router.get('/logout', (req, res) => {
     // destroy session data
     // req.session.loggedin = false;
     req.session.destroy();
-    fs.writeFile('Email.txt', "", err => {
+    fs.writeFile('private.txt', "", err => {
         if (err) throw err;
     });
     // redirect to homepage
-    console.log(`⚠️  Logout Success`.yellow);
+    console.log(`⚠️  Đăng xuất thành công`.yellow);
     res.send({
         message: 'Đăng xuất thành công'
     })
@@ -207,8 +226,8 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                 password: hashedPassword || user.password,
                 address: req.body.address || user.address,
                 phone: req.body.phone || user.phone,
-                avatar: result.secure_url || product.avatar,
-                cloudinary_id: result.public_id || product.cloudinary_id,
+                avatar: result.secure_url || user.avatar,
+                cloudinary_id: result.public_id || user.cloudinary_id,
             }
             await userModels.findByIdAndUpdate(id, data, {
                     new: true
