@@ -105,10 +105,6 @@ router.post('/login', async (req, res) => {
                         } else {
                             manager = "";
                         }
-                        const getEmail = req.body.email;
-                        fs.writeFile('private.txt', getEmail, err => {
-                            if (err) throw err;
-                        });
                         res.json({
                             message: 'Đăng nhập thành công'
                         });
