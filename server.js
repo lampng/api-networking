@@ -39,8 +39,8 @@ route(app)
 app.get("/", (req, res) => {
     res.json({
         status: "API ON",
-        "User:": "http://localhost:1102/user/",
-        "Product:": "http://localhost:1102/product/"
+        "User:": "https://api-networking.vercel.app//user/",
+        "Product:": "https://api-networking.vercel.app//product/"
     })
 })
 const APIroute = require('./routes/api');

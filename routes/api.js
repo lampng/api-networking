@@ -10,13 +10,13 @@ const fs = require('fs');
 router.get('/', (req, res) => {
     res.json({
         status: "API ON",
-        "Đăng ký(POST):": "http://localhost:1102/user/register",
-        "Đăng nhập(POST):": "http://localhost:1102/user/login",
-        "Đăng xuất(GET):": "http://localhost:1102/user/logout",
-        "Cập nhập người dùng(POST):": "http://localhost:1102/user/update/:id",
-        "Xoá người dùng(POST):": "http://localhost:1102/user/delete/:id",
-        "Gọi danh sách người dùng(GET):": "http://localhost:1102/user/list",
-        "Gọi chi tiết người dùng(GET):": "http://localhost:1102/user/detail/:id",
+        "Đăng ký(POST):": "https://api-networking.vercel.app/user/register",
+        "Đăng nhập(POST):": "https://api-networking.vercel.app/user/login",
+        "Đăng xuất(GET):": "https://api-networking.vercel.app/user/logout",
+        "Cập nhập người dùng(POST):": "https://api-networking.vercel.app/user/update/:id",
+        "Xoá người dùng(POST):": "https://api-networking.vercel.app/user/delete/:id",
+        "Gọi danh sách người dùng(GET):": "https://api-networking.vercel.app/user/list",
+        "Gọi chi tiết người dùng(GET):": "https://api-networking.vercel.app/user/detail/:id",
     })
 })
 // register

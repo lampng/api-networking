@@ -1,14 +1,14 @@
 {
   "name": "api-networking",
   "version": "1.0.0",
-  "description": "Phan Nguyen Gia Lam",
+  "description": "",
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "nodemon server.js"
   },
-  "author": "",
+  "author": "Phan Nguyen Gia Lam",
   "license": "ISC",
   "dependencies": {
     "bcrypt": "^5.1.0",
