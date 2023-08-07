@@ -31,16 +31,10 @@ router.post('/register', upload.single("image"), async (req, res) => {
         const emailCheck = await userModels.findOne({
             email: req.body.email
         });
-        const phoneCheck = await userModels.findOne({
-            phone: req.body.phone,
-        });
+
         if (emailCheck) {
             return res.status(400).json({
                 message: 'Email đã tồn tại'
-            });
-        } else if (phoneCheck) {
-            return res.status(400).json({
-                message: 'Số điện thoại đã tồn tại'
             });
         }
         // Tạo người dùng mới
@@ -59,9 +53,9 @@ router.post('/register', upload.single("image"), async (req, res) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: hashedPassword,
-                address: req.body.address,
-                phone: req.body.phone,
-                role: "client",
+                // address: req.body.address,
+                // phone: req.body.phone,
+                // role: "client",
                 avatar: result.secure_url,
                 cloudinary_id: result.public_id
             });
@@ -82,10 +76,22 @@ router.post('/register', upload.single("image"), async (req, res) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: hashedPassword,
-                address: req.body.address,
-                phone: req.body.phone,
-                role: "client",
+                // address: req.body.address,
+                // phone: req.body.phone,
+                // role: "client",
             });
+            try {
+                await newUser.save();
+                res.json({
+                    message: 'Đăng ký thành công'
+                });
+                console.log(`✅  Đăng ký thành công`.green.bold);
+            } catch (error) {
+                res.json({
+                    message: 'Đăng ký không thành công'
+                });
+                console.log(`❗  Đăng ký không thành công`.bgRed.white.bold);
+            }
         }
         // =============================================
 
@@ -112,11 +118,11 @@ router.post('/login', async (req, res) => {
 
                         var manager = check.role;
                         console.log(`========= ✅  Login success | ${check.role} =========`.green.bold);
-                        req.session.user = check.email;
+                        req.session.email = check.email;
                         req.session._id = check._id
                         req.session.loggedin = true;
                         console.log(`Status user log: `.red.bold + ` [${req.session.loggedin}]`.white.bold);
-                        console.log(`Email user log:  `.red.bold + `[${req.session.user}]`.white.bold);
+                        console.log(`Email user log:  `.red.bold + `[${req.session.email}]`.white.bold);
                         console.log(`ID user log: `.red.bold + `[${req.session._id}]`.white.bold);
                         req.session.role = manager;
                         if (manager == "admin") {
@@ -125,7 +131,8 @@ router.post('/login', async (req, res) => {
                             manager = "";
                         }
                         res.json({
-                            message: 'Đăng nhập thành công'
+                            message: 'Đăng nhập thành công',
+                            status: req.se
                         });
                         // if (req.session.role == "admin") {
                         //     productModels.find({}).limit(9).then((data) => {
@@ -224,8 +231,8 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                 name: req.body.name || user.name,
                 email: req.body.email || user.email,
                 password: hashedPassword || user.password,
-                address: req.body.address || user.address,
-                phone: req.body.phone || user.phone,
+                // address: req.body.address || user.address,
+                // phone: req.body.phone || user.phone,
                 avatar: result.secure_url || user.avatar,
                 cloudinary_id: result.public_id || user.cloudinary_id,
             }
@@ -246,8 +253,8 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                 name: req.body.name || user.name,
                 email: req.body.email || user.email,
                 password: hashedPassword || user.password,
-                address: req.body.address || user.address,
-                phone: req.body.phone || user.phone,
+                // address: req.body.address || user.address,
+                // phone: req.body.phone || user.phone,
             }
             await userModels.findByIdAndUpdate(id, data)
                 .then(doc => {
@@ -288,6 +295,23 @@ router.delete('/delete/:id', async (req, res) => {
         res.status(500).json({
             message: error.message
         })
+    }
+})
+
+// Get my sessions
+router.get('/user/loginStatus/:email', async (req,res) => {
+    try {
+        const {
+            email
+        } = req.params;
+        const user = await userModels.findById(email);
+            res.status(200).json(user);
+    } catch (error) {
+        console.log(`❗  ${error.message}`.bgRed.white.strikethrough.bold);
+        res.status(500).json({
+            message: error.message
+        })
+        console.log(`❗  Gọi chi tiết người dùng thất bại`.bgRed.white.strikethrough.bold);
     }
 })
 module.exports = router;

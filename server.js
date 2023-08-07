@@ -43,7 +43,7 @@ app.get("/", (req, res) => {
         "Product:": "https://phanlam-api.vercel.app/product/"
     })
 })
-const APIroute = require('./routes/api');
+const APIroute = require('./routes/userAPI');
 const cors = require("cors")
 app.use("/", cors({
     origin: '*'
