@@ -12,18 +12,14 @@ const userSchema = mongoose.Schema({
         type: String,
         require: true
     },
-    // address: {
-    //     type: String,
-    //     require: true
-    // },
-    // phone: {
-    //     type: String,
-    //     require: true
-    // },
     role: {
         type: String,
         default: 'client',
     },
+    favorite: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'favorite',
+    }],
     avatar: {
         type: String,
         require: false

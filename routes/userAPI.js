@@ -1,7 +1,9 @@
 require('colors')
 // mongodb user model
 const userModels = require('../models/userModel');
+const postModels = require('../models/PostModel');
 require('dotenv').config();
+const session = require('express-session');
 //Tải lên ảnh
 const cloudinary = require('../middleware/cloudinary.js');
 const upload = require('../middleware/upload');
@@ -20,18 +22,17 @@ router.get('/', (req, res) => {
         "Xoá người dùng(DELETE):": "https://phanlam-api.vercel.app/user/delete/:id",
         "Gọi danh sách người dùng(GET):": "https://phanlam-api.vercel.app/user/list",
         "Gọi chi tiết người dùng(GET):": "https://phanlam-api.vercel.app/user/detail/:id",
+        "Gọi danh sách bài viết người dùng yêu thích (GET):": "https://phanlam-api.vercel.app/user/favorites/:user_ID",
     })
 })
-// register
-//Đăng ký
-//Lưu ý: "Key" ở trong form-data phải cùng tên với (upload.single("image"))
+// TODO: Đăng ký
+// TODO: Lưu ý "Key" ở trong form-data phải cùng tên với (upload.single("image"))
 router.post('/register', upload.single("image"), async (req, res) => {
     try {
 
         const emailCheck = await userModels.findOne({
             email: req.body.email
         });
-
         if (emailCheck) {
             return res.status(400).json({
                 message: 'Email đã tồn tại'
@@ -40,11 +41,6 @@ router.post('/register', upload.single("image"), async (req, res) => {
         // Tạo người dùng mới
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
-
-
-
-
-
         if (req.file != null) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: "android-networking/users"
@@ -53,9 +49,6 @@ router.post('/register', upload.single("image"), async (req, res) => {
                 name: req.body.name,
                 email: req.body.email,
                 password: hashedPassword,
-                // address: req.body.address,
-                // phone: req.body.phone,
-                // role: "client",
                 avatar: result.secure_url,
                 cloudinary_id: result.public_id
             });
@@ -99,7 +92,7 @@ router.post('/register', upload.single("image"), async (req, res) => {
         console.log(`ERRORR: ${error}`.bgRed.white);
     }
 })
-//Đăng nhập
+// TODO: Đăng nhập
 router.post('/login', async (req, res) => {
     try {
         const check = await userModels.findOne({
@@ -121,69 +114,52 @@ router.post('/login', async (req, res) => {
                         req.session.email = check.email;
                         req.session._id = check._id
                         req.session.loggedin = true;
-                        console.log(`Status user log: `.red.bold + ` [${req.session.loggedin}]`.white.bold);
-                        console.log(`Email user log:  `.red.bold + `[${req.session.email}]`.white.bold);
-                        console.log(`ID user log: `.red.bold + `[${req.session._id}]`.white.bold);
                         req.session.role = manager;
-                        if (manager == "admin") {
-                            (manager = "Manager");
-                        } else {
-                            manager = "";
-                        }
+
+                        const {
+                            _id,
+                            loggedin
+                        } = req.session
+                        const getName = check.name;
+                        const getEmail = check.email;
+                        const getRole = check.role;
+                        const getAvatar = check.avatar;
+                        const getcloudinary_id = check.cloudinary_id;
+                        console.log(`✅  Đăng nhập thành công`.green.bold);
                         res.json({
-                            message: 'Đăng nhập thành công',
-                            status: req.se
+                            "session_id": req.session.id,
+                            "_id": _id,
+                            "loggedin": loggedin,
+                            "name": getName,
+                            "email": getEmail,
+                            "role": getRole,
+                            "avatar": getAvatar,
+                            "cloudinary_id": getcloudinary_id,
                         });
-                        // if (req.session.role == "admin") {
-                        //     productModels.find({}).limit(9).then((data) => {
-                        //         res.json({
-                        //             // productData: data.map((s) => s.toJSON()),
-                        //             emailCheck: req.body.email,
-                        //             loginCheck: true,
-                        //             Manager: true
-                        //         });
-                        //     });
-                        // } else if (req.session.role == "client") {
-                        //     productModels.find({}).limit(9).then((data) => {
-                        //         res.json({
-                        //             // productData: data.map((s) => s.toJSON()),
-                        //             emailCheck: req.body.email,
-                        //             loginCheck: true,
-                        //         });
-                        //     });
-                        // }
                     } else {
                         console.log(check.password + "|" + req.body.password);
-                        res.send("Wrong password");
-                        console.log(`Wrong password`.bgRed.white.strikethrough.bold);
+                        res.send("Sai mật khẩu");
+                        console.log(`Sai mật khẩu`.bgRed.white.strikethrough.bold);
                     }
                 } else {
-                    console.log("Password null".bgRed.white.strikethrough.bold);
+                    console.log("Ô nhập mật khẩu đang trống".bgRed.white.strikethrough.bold);
                 }
             } else {
-                res.send("Wrong Email");
-                console.log("Wrong Email".bgRed.white.strikethrough.bold);
+                res.send("Sai email");
+                console.log("Sai email".bgRed.white.strikethrough.bold);
                 // console.log(req.body);
             }
         });
     } catch (err) {
-        console.log("Failed: ".bgRed.white.strikethrough.bold, err);
+        console.log("Đăng nhập thấy bại: ".bgRed.white.strikethrough.bold, err);
     }
 })
-router.get('/logout', (req, res) => {
-    // destroy session data
-    // req.session.loggedin = false;
-    req.session.destroy();
-    fs.writeFile('private.txt', "", err => {
-        if (err) throw err;
-    });
-    // redirect to homepage
-    console.log(`⚠️  Đăng xuất thành công`.yellow);
-    res.send({
-        message: 'Đăng xuất thành công'
-    })
+router.get('/logout/:id', (req, res) => {
+    const id = req.params.id
+    req.sessionStore.destroy(id)
+    console.log(`✅  Đăng xuất thành công`.green.bold);
 })
-//Gọi danh sách người dùng
+// TODO: Gọi danh sách người dùng
 router.get('/list', async (req, res) => {
     try {
         const user = await userModels.find({});
@@ -196,7 +172,7 @@ router.get('/list', async (req, res) => {
         })
     }
 })
-//Gọi chi tiết người dùng
+// TODO: Gọi chi tiết người dùng
 router.get('/detail/:id', async (req, res) => {
     try {
         const {
@@ -213,17 +189,19 @@ router.get('/detail/:id', async (req, res) => {
         console.log(`❗  Gọi chi tiết người dùng thất bại`.bgRed.white.strikethrough.bold);
     }
 })
-//Cập nhập người  dùng
+// TODO: Chỉnh sửa thông tin người dùng
 router.put('/update/:id', upload.single("image"), async (req, res) => {
     try {
         const {
-            id
+            id,
         } = req.params;
         let user = await userModels.findById(id);
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(req.body.password, salt);
         if (req.file != null) {
-            await cloudinary.uploader.destroy(user.cloudinary_id);
+            if (user.cloudinary_id != null) {
+                await cloudinary.uploader.destroy(user.cloudinary_id);
+            }
             const result = await cloudinary.uploader.upload(req.file.path, {
                 folder: "android-networking/users"
             });
@@ -236,6 +214,7 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                 avatar: result.secure_url || user.avatar,
                 cloudinary_id: result.public_id || user.cloudinary_id,
             }
+            
             await userModels.findByIdAndUpdate(id, data, {
                     new: true
                 })
@@ -248,13 +227,12 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                 .catch(err => {
                     console.log(`Lỗi catch: `.bgRed, err);
                 });
+
         } else {
             const data = {
                 name: req.body.name || user.name,
                 email: req.body.email || user.email,
                 password: hashedPassword || user.password,
-                // address: req.body.address || user.address,
-                // phone: req.body.phone || user.phone,
             }
             await userModels.findByIdAndUpdate(id, data)
                 .then(doc => {
@@ -267,6 +245,7 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
                     console.log(`❗  Lỗi else`.bgRed.white.strikethrough.bold);
                 });
         }
+
     } catch (error) {
         console.log(`❗  ${error.message}`.bgRed.white.strikethrough.bold);
         res.status(500).json({
@@ -275,43 +254,99 @@ router.put('/update/:id', upload.single("image"), async (req, res) => {
         console.log(`❗  Cập nhập thất bại`.bgRed.white.strikethrough.bold);
     }
 })
-//Xoá người dùng
+// TODO: Xoá người dùng
 router.delete('/delete/:id', async (req, res) => {
     try {
         const {
             id
         } = req.params;
+
+        // Lấy danh sách bài viết của người dùng
+        const postsToDelete = await postModels.find({
+            user_ID: id
+        });
+
+        // Xoá các tệp trên Cloudinary liên quan đến các bài viết
+        for (const post of postsToDelete) {
+            if (post.cloudinary_id) {
+                await cloudinary.uploader.destroy(post.cloudinary_id);
+                console.log(`✅ Đã xoá tệp trên Cloudinary: ${post.cloudinary_id}`);
+            }
+        }
+
+        // Xoá các bài viết của người dùng
+        await postModels.deleteMany({
+            user_ID: id
+        });
+        // Xoá người dùng
         const user = await userModels.findByIdAndDelete(id);
         if (!user) {
             return res.status(404).json({
                 message: `Không tìm thấy người dùng`
-            })
+            });
         }
-        await cloudinary.uploader.destroy(user.cloudinary_id)
-        res.status(200).json(user);
-        console.log(`✅ Xoá thành công`.green.bold);
-    } catch (error) {
-        console.log(`❗  ${error.message}`.bgRed.white.strikethrough.bold);
-        res.status(500).json({
-            message: error.message
-        })
-    }
-})
 
-// Get my sessions
-router.get('/user/loginStatus/:email', async (req,res) => {
-    try {
-        const {
-            email
-        } = req.params;
-        const user = await userModels.findById(email);
-            res.status(200).json(user);
+        // Xoá tệp trên Cloudinary liên quan đến người dùng
+        if (user.cloudinary_id) {
+            await cloudinary.uploader.destroy(user.cloudinary_id);
+            console.log(`✅ Đã xoá tệp trên Cloudinary của người dùng: ${user.cloudinary_id}`);
+        }
+        console.log(`✅ Xoá thành công`);
+        res.status(200).json(user);
     } catch (error) {
         console.log(`❗  ${error.message}`.bgRed.white.strikethrough.bold);
         res.status(500).json({
             message: error.message
         })
-        console.log(`❗  Gọi chi tiết người dùng thất bại`.bgRed.white.strikethrough.bold);
     }
 })
+// TODO: gọi danh sách các bài viết yêu thích của người dùng
+router.get('/favorites/:user_ID', async (req, res) => {
+    try {
+        const user_ID = req.params.user_ID;
+        const user = await userModels.findById(user_ID);
+
+        if (!user) {
+            return res.status(404).json({
+                message: 'Người dùng không tồn tại'
+            });
+        }
+
+        const favoritePostIDs = user.favorite;
+        const favoritePosts = await postModels.find({
+            _id: {
+                $in: favoritePostIDs
+            }
+        }).sort({
+            createdAt: -1
+        });
+
+        const combinedData = await Promise.all(favoritePosts.map(async post => {
+            const postUser = await userModels.findById(post.user_ID);
+            return {
+                user_ID: postUser._id,
+                name: postUser.name,
+                email: postUser.email,
+                role: postUser.role,
+                avatar: postUser.avatar,
+                post_ID: post._id,
+                description: post.description,
+                date: post.date,
+                favorite: post.favorite,
+                image: post.image,
+                cloudinary_id: post.cloudinary_id,
+                comments: post.comments,
+            };
+        }));
+
+        res.status(200).json(combinedData);
+        console.log(`✅ Gọi danh sách bài viết yêu thích thành công`.green.bold);
+    } catch (error) {
+        console.log(`❗ ${error.message}`.bgRed.white.strikethrough.bold);
+        res.status(500).json({
+            message: 'Đã có lỗi xảy ra'
+        });
+    }
+});
+
 module.exports = router;

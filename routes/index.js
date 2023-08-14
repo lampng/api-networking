@@ -1,9 +1,8 @@
 const userAPI = require('./userAPI');
-const categoryAPI = require('./categoryAPI');
-const productAPI = require('./productAPI');
+const postAPI = require('./postAPI');
+
 function route(app) {
     app.use('/user', userAPI);
-    app.use('/category', categoryAPI);
-    app.use('/product', productAPI);
+    app.use('/post', postAPI);
 }
 module.exports = route;
