@@ -17,7 +17,6 @@ router.get('/', (req, res) => {
         "Cập nhập bài viết(PUT):": "https://phanlam-api.vercel.app/post/update/:id",
         "Xoá bài viết(DELETE):": "https://phanlam-api.vercel.app/post/delete/:id",
         "Gọi danh sách bài viết(GET):": "https://phanlam-api.vercel.app/post/list",
-        "Gọi chi tiết bài viết(GET):": "https://phanlam-api.vercel.app/post/detail/:id",
         "Gọi các bài viết của người dùng(GET):": "https://phanlam-api.vercel.app/post/list/:user_ID",
         "Like bài viết | cần id bài viết và id người dùng (POST):": "https://phanlam-api.vercel.app/post/like/:postID",
         "Comment bài viết:": "https://phanlam-api.vercel.app/post/comments/:postID",
