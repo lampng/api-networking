@@ -41,7 +41,7 @@ app.get("/", (req, res) => {
     res.json({
         status: "API ON",
         "User:": "https://phanlam-api.vercel.app/user/",
-        "Product:": "https://phanlam-api.vercel.app/product/"
+        "Post:": "https://phanlam-api.vercel.app/post/"
     })
 })
 const APIroute = require('./routes/userAPI');
